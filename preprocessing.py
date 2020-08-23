@@ -17,6 +17,7 @@ def try_except_decorator(func):
             return
     return wrapper_func
 
+# обработка данных
 @try_except_decorator
 def get_int(x):
     return int(x)
@@ -42,3 +43,9 @@ def get_trunc_date(x, trunc_type='month', is_str=False):
     if is_str:
         return str(x)[:7]
     return x
+
+# inspect tools
+def inspect_methods(object_):
+    # список вызываемых публичных методов инстанса
+    return [method_name for method_name in dir(object_)
+            if callable(getattr(object_, method_name)) and not method_name.startswith('_')]

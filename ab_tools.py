@@ -46,6 +46,7 @@ def ab_get_uniform_hist(title, p_values, bins=50):
 
 # Длительность теста
 # TODO Написать развилку с возможностью считать с дисперсией экспериментальной выборки
+# TODO - правильно научиться оценивать время эксперимента
 def ab_calc_exp_duration(metric_list, users_per_day, alpha=0.05, power=0.8, ratio=1, mde_range_percent=range(5, 30, 5)):
     """Расчет длительности эксперимента по контрольной метрике в заданном диапазоне MDE = minimal detective effect
     metric_list - значения контрольной метрики эксперимента для каждого юзера (агрегированное по дням)
@@ -71,6 +72,17 @@ def ab_calc_exp_duration(metric_list, users_per_day, alpha=0.05, power=0.8, rati
     plt.ylabel('Кол-во дней эксперимента')
     plt.grid()
     return duration_list
+
+def ab_get_mde(metric_list, n_control, alpha=0.05, power=0.8, ratio=1):
+    """Получение актуального mde по произведенному эксперименту"""
+    mean_control = np.mean(metric_list)
+    std_control = np.std(metric_list)
+
+    effect_size = tt_ind_solve_power(nobs1=n_control, alpha=alpha,
+                                    power=power, ratio=ratio, alternative='larger')
+
+    # mde
+    return round(100 * effect_size * std_control / mean_control, 1)
 
 # Подвыборки
 # получаем по соли слоя принадлежность работодателя к ветке эксперимента
