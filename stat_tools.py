@@ -58,7 +58,7 @@ class Stat_tests:
     def t_test(self, val_list_1, val_list_2):
         # для независимых выборок, распределение статистики по Стьюденту,
         # подходит для малых выборок
-        T, p_value = ttest_ind(val_list_1, val_list_2, alternative=self._alternative)
+        T, p_value, _ = ttest_ind(val_list_1, val_list_2, alternative=self._alternative)
         return self._get_decision(p_value, T)
 
     def z_test(self, val_list_1, val_list_2):
@@ -84,7 +84,7 @@ class Stat_tests:
         return np.round(np.percentile(stat_list, [alpha/2, 100-alpha/2]), 3)
 
     # КРИТЕРИИИ СОГЛАСИЯ
-    def ks_test(data_1, data_2, args=()):
+    def ks_test(self, data_1, data_2, args=()):
         """Колмогорова-Смирнова тест для сравнения выборочного распределения с
         аналитическим или выборочным распределением
         data_1 - выборка #1
@@ -100,7 +100,7 @@ class Stat_tests:
             T, p_value = kstest(data_1, data_2, alternative=alternative)
         return self._get_decision(p_value, T)
 
-    def chi2_test(obs_freq, exp_freq=None):
+    def chi2_test(self, obs_freq, exp_freq=None):
         """Критерий Пирсона о согласии частот/долей для категориальных переменных в разных группах
         obs_freq - одномерное или n-мерное распределение частот (таблица сопряженности)
         exp_freq - ожидаемое одномерное распределение частот (по умолчанию равномерное)
@@ -116,7 +116,7 @@ class Stat_tests:
     def conf_interval_mean(self, val_list):
         """Доверительный интервал для среднего по выборке
         Выборочное среднее при n->inf распределено нормально"""
-        confidence = 1 - self.alpha
+        confidence = 1 - self._alpha
         a = 1.0 * np.array(val_list); n = len(a)
         m, se = np.mean(a), sem(a)
         h = se * t.ppf((1 + confidence) / 2., n-1)
@@ -125,7 +125,7 @@ class Stat_tests:
     def conf_interval_bootstrap_agg(self, val_list, agg, n_iter=1e3, show_dist=False):
         """Доверительный интервал для произвольного выборочного agg(val_list)
         show_dist позволяет отобразить распределение выборочной статистики"""
-        stat_list = []; alpha = 100 * self.alpha
+        stat_list = []; alpha = 100 * self._alpha
         for _ in range(n_iter):
             val_list_boot = np.random.choice(val_list, len(val_list), replace=True)
             stat_list.append(agg(val_list_boot))
@@ -168,6 +168,8 @@ def winsorize_filter(list_value, percentile_1, percentile_2):
 # Верхнеуровневые тулзы
 # lorenz_curve
 
+
+# добавить вывод value_counts
 def get_k_means(input_data, cl_number_list = [5]):
     """Кластеризация без учителя методом К-средних
     input_data - pd.DataFrame или list - по группе значений либо одной колонке
@@ -264,6 +266,7 @@ def init_matplot(figsize_x=10, figsize_y=5, subplot_grid=None):
 
 
 # TODO - boxplots, heatmap, ...
+# stack диаграмма ретеншн
 def get_percentile_curve(val_list, per_start, per_end, per_step=5, plot_style='-o'):
     """Перцентильная кривая для выборки val_list"""
     per_range = list(range(per_start, per_end + per_step, per_step))
